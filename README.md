@@ -1,6 +1,6 @@
-# Stone Saga — Crafting Journal
+# Stonesaga — Crafting Journal
 
-A browser-based crafting tracker for the Stone Saga board game. Records discovered
+A browser-based crafting tracker for the Stonesaga board game. Records discovered
 recipes, computes possible crafting codes from token pip data, and lets a whole table
 share a common set of values via JSON export/import.
 

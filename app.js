@@ -837,7 +837,7 @@ function fmtDate(iso) {
 function exportData() {
   if (!recipes.length && !Object.keys(nullCodes).length) { alert('Nothing to export.'); return; }
   const payload = {
-    app: 'Stone Saga Crafting Journal',
+    app: 'Stonesaga Crafting Journal',
     version: 2,
     exportedAt: new Date().toISOString(),
     lastUpdated: lastUpdated || new Date().toISOString(),

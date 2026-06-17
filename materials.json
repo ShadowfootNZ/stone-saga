@@ -1,5 +1,5 @@
 {
-  "_readme": "Stone Saga material reference data. 'base' links a processed material back to its raw form. 'marks' are the 4 edge pips [left, right, top, bottom] — null means no pip on that edge. Images live in assets/images/materials/.",
+  "_readme": "Stonesaga material reference data. 'base' links a processed material back to its raw form. 'marks' are the 4 edge pips [left, right, top, bottom] — null means no pip on that edge. Images live in assets/images/materials/.",
 
   "Bone": {
     "cat": "animal", "base": null, "processed": "Bone (carved)",
