@@ -28,7 +28,7 @@ others **Import** it.
 ## Features
 
 - **Journal** — record discovered items with their item-card number, all crafting codes,
-  the two source materials (with category), and notes.
+  the two source materials (category is auto-derived from the material name), and notes.
 - **Combination Explorer** — pick one or two materials and see every valid crafting code,
   flagged as discovered, dead-end, or unknown. Selecting an unprocessed material also
   considers its processed form.
@@ -49,6 +49,10 @@ Token order matters — A-left/B-right and B-left/A-right are distinct combinati
 
 ## Token data format
 
+Pip data for all materials listed in [Materials](#materials) is built in — no file needed
+for normal use. Load a custom file only to override built-in data or add materials not
+yet in the app.
+
 ```json
 {
   "Wood (hardened)": [
@@ -56,15 +60,40 @@ Token order matters — A-left/B-right and B-left/A-right are distinct combinati
     ["Yellow", 3, "Blue", 2]
   ],
   "Feather": [
-    ["Red", 1, "Blue", 0],
+    ["Red", 1, null, 0],
     ["Blue", 1, "Red", 2]
   ]
 }
 ```
 
-Each material maps to a list of orientations. Each orientation is
-`[leftColour, leftCount, rightColour, rightCount]`. Use `null` for a null icon
-(count `0`). Pip colours: Blue, Red, Yellow, Purple, Grey.
+Each material maps to a list of valid orientations (only orientations with a non-null left
+edge are included). Each orientation is `[leftColour, leftCount, rightColour, rightCount]`.
+Use `null` for a null icon (count `0`). Pip colours: Blue, Red, Yellow, Purple, Grey.
+
+## Adding materials
+
+Edit `materials.json` — the app fetches it at startup. Each entry is keyed by material
+name and has the following fields:
+
+```json
+"Amber (polished)": {
+  "cat": "rare",
+  "base": "Amber",
+  "processed": null,
+  "image": "assets/images/materials/amber-polished.webp",
+  "marks": { "left": "Red 3", "right": "Blue 2", "top": "Yellow 1", "bottom": "Red 4" }
+}
+```
+
+- `cat` — `animal`, `plant`, `mineral`, or `rare`
+- `base` — the raw form's name, or `null` if this is the raw form
+- `processed` — the processed form's name, or `null` if this is the processed form
+- `image` — path relative to the project root; drop the image in `assets/images/materials/`
+- `marks` — the four edge pips (`left`, `right`, `top`, `bottom`), each `"Color N"` or `null`
+
+The `materials.json` format is only supported when the app is served over HTTP (GitHub
+Pages, a local dev server, etc.). Opening `index.html` directly via `file://` falls back
+to the built-in list hardcoded in `app.js`.
 
 ## Materials
 

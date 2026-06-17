@@ -5,10 +5,11 @@ const STORAGE_KEY = 'stonesaga_v2';
 const PIP_COLORS  = ['Blue','Red','Yellow','Purple','Grey'];
 const PIP_CSS     = {Blue:'blue',Red:'red',Yellow:'yellow',Purple:'purple',Grey:'grey'};
 
+// Materials are loaded from materials.json at startup.
+// Edit that file to add new materials; the hardcoded list below is a fallback
+// used only when the file cannot be fetched (e.g. opening via file://).
 const IMG = 'assets/images/materials/';
-// marks: [left, right, top, bottom] — each entry is "Color N" or null for no pip.
-// From these 4 edges the app derives all 4 token rotations automatically.
-const KNOWN_MATERIALS = [
+const KNOWN_MATERIALS_BUILTIN = [
   {name:'Bone',               cat:'animal',  processed:'Bone (carved)',        image:IMG+'bone.webp',              marks:['Blue 2',  'Yellow 2', 'Yellow 3', 'Red 2'  ]},
   {name:'Bone (carved)',      cat:'animal',  processed:null,                   image:IMG+'bone-carved.webp',       marks:['Red 1',   'Yellow 3', 'Red 4',    'Yellow 4']},
   {name:'Hide',               cat:'animal',  processed:'Hide (cured)',         image:IMG+'hide.webp',              marks:null},
@@ -42,7 +43,20 @@ const KNOWN_MATERIALS = [
   {name:'Silk',               cat:'rare',    processed:'Silk (woven)',         image:IMG+'silk.webp',              marks:['Blue 1',  'Yellow 1', 'Red 3',    null      ]},
   {name:'Silk (woven)',       cat:'rare',    processed:null,                   image:IMG+'silk-woven.webp',        marks:['Blue 2',  'Red 5',    null,       null      ]},
 ];
-const KM = Object.fromEntries(KNOWN_MATERIALS.map(m=>[m.name.toLowerCase(),m]));
+let KNOWN_MATERIALS = KNOWN_MATERIALS_BUILTIN;
+let KM = Object.fromEntries(KNOWN_MATERIALS.map(m=>[m.name.toLowerCase(),m]));
+
+function parseMaterialsJson(data){
+  return Object.entries(data)
+    .filter(([k])=>k!=='_readme')
+    .map(([name,m])=>({
+      name,
+      cat: m.cat,
+      processed: m.processed,
+      image: m.image,
+      marks: m.marks ? [m.marks.left, m.marks.right, m.marks.top, m.marks.bottom] : null,
+    }));
+}
 
 // A material can participate in crafting only if it has at least one non-null edge mark.
 function canCraft(name){ const m=KM[norm(name)]; return !!(m&&m.marks); }
@@ -1027,6 +1041,16 @@ document.addEventListener('keydown',e=>{
 // ═══════════════════════════════════════════════════
 // INIT
 // ═══════════════════════════════════════════════════
-load();
-renderJournal();
-renderTokenNotice();
+(async()=>{
+  try{
+    const res=await fetch('materials.json');
+    if(res.ok){
+      const data=await res.json();
+      KNOWN_MATERIALS=parseMaterialsJson(data);
+      KM=Object.fromEntries(KNOWN_MATERIALS.map(m=>[m.name.toLowerCase(),m]));
+    }
+  }catch(e){ /* fetch unavailable (file://); built-in list remains active */ }
+  load();
+  renderJournal();
+  renderTokenNotice();
+})();
