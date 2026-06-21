@@ -1,4 +1,131 @@
 // ═══════════════════════════════════════════════════
+// TODO — JOURNAL TRANSFORMATION
+// Convert this app from a crafting helper into a full campaign journal.
+// Each section below becomes its own tab (or collapsible panel) alongside
+// the existing Crafting / Recipes tabs.
+//
+// ── VALLEY MAP ─────────────────────────────────────
+// TODO: Add a Valley Map section.
+//   - Display a hex-grid map of the valley (SVG or canvas).
+//   - Allow players to label hexes (terrain type, name, notes).
+//   - Support uploading a scanned map image as a background layer.
+//   - Store hex annotations in the save JSON under `valleyMap`.
+//
+// ── CULTURE ────────────────────────────────────────
+// TODO: Add a Culture section with fields for:
+//   - Tribe name
+//   - Structures (list, each with name + notes)
+//   - Mantle Powers (list with name + description)
+//   - Knowledge Cards (list with card ID + name)
+//   - Taboos (list of text entries)
+//   - Pigments (list of discovered pigment names/colours)
+//   Store in `culture` object in the save JSON.
+//
+// ── BEHEMOTHS ──────────────────────────────────────
+// TODO: Add a Behemoths section — a list of behemoth entries, each with:
+//   - Name
+//   - Lair hex (cross-reference with Valley Map hex IDs)
+//   - Revealed secrets (ordered list that unlocks progressively)
+//   - Demeanor (text, e.g. "Aggressive", "Dormant")
+//   Store as `behemoths: []` in the save JSON.
+//
+// ── CHALLENGE RECORD ───────────────────────────────
+// TODO: Add a Challenge Record section grouped by Epoch.
+//   - Each epoch contains a list of challenges: name, card ID, outcome (won/lost/fled), notes.
+//   - Display as collapsible epoch groups, newest epoch first.
+//   Store as `challengeRecord: { epoch1: [...], epoch2: [...], ... }` in the save JSON.
+//
+// ── LOOMING CHALLENGES ─────────────────────────────
+// TODO: Add a Looming Challenges section — an ordered list of upcoming challenges.
+//   - Each entry: name, card ID, notes, and a "prepare by" epoch marker.
+//   - Allow re-ordering (drag-and-drop or up/down buttons).
+//   Store as `loomingChallenges: []` in the save JSON.
+//
+// ── INVESTIGATIONS ─────────────────────────────────
+// TODO: Add an Investigations section — a list of investigation entries, each with:
+//   - Omen (the trigger/sign)
+//   - Investigation card ID
+//   - Notes (findings, progress)
+//   Store as `investigations: []` in the save JSON.
+//
+// ── PROVISIONAL TEXT (applies to Crafting, Investigations, Behemoths, Challenges) ──
+// TODO: Support provisional entries where the card ID and associated text come from an
+//   uncertified source — e.g. community data files, old transcriptions, or inferences
+//   rather than reading directly off the physical card.
+//
+//   Concrete example: crafting-blue.txt (Blue crafting codes, CSV format):
+//     Code ; Flavor Text ; Game Text ; Item Name
+//     1111 ; "You've made rope!…" ; "…gain the Rope item card (IT29)…" ; Rope
+//   This file is ~2 years old and may not match the current edition. Codes are
+//   reliable (you already rolled them at the table), but item names, card IDs (IT##),
+//   flavor text, and game text are spoilers from an unverified external source.
+//
+//   Reveal order when provisional:
+//     1. Crafting code (always visible — the player already knows this).
+//     2. Item card ID (IT##) — show this next so the group can locate the physical card.
+//     3. Item name, flavor text, game text — hidden behind a "Reveal" toggle until
+//        the group confirms the physical card matches the ID.
+//
+//   Implementation:
+//   - Add `provisional: true` and optionally `provisionalSource: string` to any
+//     recipe or entry populated from unverified external data.
+//   - Render provisional recipes with an "Unverified source" badge in the recipe card.
+//   - Spoiler fields (name, notes, flavor) are collapsed by default; a "Reveal spoiler"
+//     button expands them.
+//   - A "Confirm" button (or edit + save) clears the provisional flag once someone
+//     at the table has verified the content against the physical card.
+//
+// TODO: Add an importer for the crafting-blue.txt format (and equivalent files for
+//   other pip colours). Parse the semicolon-delimited rows, extract the card ID from
+//   the Game Text (e.g. "IT29" from "search the Item Card deck facedown for IT29"),
+//   and import each row as a provisional recipe. This lets the group pre-populate
+//   known codes without manually entering them, while the provisional flag ensures
+//   no spoilers are shown until physically verified.
+//
+// ── CAVE WALL ──────────────────────────────────────
+// TODO: Add a Cave Wall section for pictographic records.
+//   - Display a grid/gallery of named cave drawings.
+//   - Each entry has a name (always recorded) and an optional image.
+//   - Support uploading an image file (photo of a physical drawing).
+//   - Consider an in-browser SVG drawing canvas for simple silhouette-style
+//     figures (think cave-painting style: single stroke, filled shapes).
+//     If an Apple Pencil / iPad + web app is the target, a basic PointerEvent
+//     canvas with SVG path capture could work without a native app.
+//   - Store image references as base64 data URIs or as filenames with a
+//     side-channel image store (IndexedDB is better than localStorage for blobs).
+//   Store as `caveWall: [{ name, svgData|imageDataUrl, addedAt }]` in the save JSON.
+//
+// ── NOTES ──────────────────────────────────────────
+// TODO: Add a free-form Notes section.
+//   - Simple textarea (or lightweight Markdown editor).
+//   - Optionally support multiple named note pages.
+//   Store as `notes: string` (or `notes: [{ title, body }]`) in the save JSON.
+//
+// ── GOOGLE DRIVE SYNC ──────────────────────────────
+// TODO: Add Google Drive URL-based JSON sync so everyone at the table can share state.
+//   - Store a Google Drive file sharing URL inside the JSON itself (field: `driveUrl`).
+//     Once someone has the JSON, the URL travels with it — no separate setup needed.
+//   - The shared file must be a publicly editable Google Drive file (owner sets
+//     "Anyone with the link can edit"), which exposes a direct download URL.
+//   - Add "Sync from Drive" and "Push to Drive" buttons (or auto-sync on every save).
+//   - Use the Google Drive API (or the public fetch-by-file-ID URL trick) to GET the
+//     latest JSON, run the existing merge logic, then PUT the merged result back.
+//   - Note: direct Drive writes from a plain HTML page require either the Drive API
+//     with OAuth, or a small proxy/Apps Script Web App the group controls.
+//   - Consider a "Last synced" timestamp and conflict warning if both local and Drive
+//     were updated since the last sync.
+//
+// ── ITEM COLOUR / MATERIAL TYPE ────────────────────
+// TODO: Allow colours beyond Blue/Red/Yellow/Purple/Grey when adding a discovered item.
+//   - Some item cards are materials discovered during play (e.g. pigment stones, rare
+//     plants) and may be represented by a Green card or other non-crafting colours.
+//   - Add Green (and any other in-game colours) to PIP_COLORS / PIP_CSS.
+//   - Update the code parser (parseCodeString / PIP_ABBREV) to accept the new letter(s).
+//   - Update the hint text in the Add Recipe modal and Help modal to list the new colour.
+//   - Consider a visual indicator on recipe cards to distinguish "material" items
+//     from crafted items.
+//
+// ═══════════════════════════════════════════════════
 // CONSTANTS
 // ═══════════════════════════════════════════════════
 const STORAGE_KEY = 'stonesaga_v2';

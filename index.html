@@ -33,7 +33,54 @@
   <div class="tabs">
     <button class="tab-btn active" onclick="switchTab('explorer',this)">Crafting</button>
     <button class="tab-btn" onclick="switchTab('journal',this)">Recipes</button>
+    <!-- TODO: Add tabs for each journal section:
+         Valley Map | Culture | Behemoths | Challenges | Looming | Investigations | Cave Wall | Notes
+         Each maps to a tab-panel below and a switchTab() call in app.js. -->
   </div>
+
+  <!-- TODO: VALLEY MAP tab-panel
+       <div class="tab-panel" id="tab-valley-map">
+         Hex grid SVG + labelling UI. Background image upload. Hex annotation store.
+       </div> -->
+
+  <!-- TODO: CULTURE tab-panel
+       <div class="tab-panel" id="tab-culture">
+         Tribe name. Editable lists for: Structures, Mantle Powers, Knowledge Cards, Taboos, Pigments.
+       </div> -->
+
+  <!-- TODO: BEHEMOTHS tab-panel
+       <div class="tab-panel" id="tab-behemoths">
+         List of behemoth cards. Each: name, lair hex, demeanor, revealed secrets (progressive unlock).
+       </div> -->
+
+  <!-- TODO: CHALLENGE RECORD tab-panel
+       <div class="tab-panel" id="tab-challenges">
+         Challenges grouped by Epoch. Each entry: name, card ID, outcome, notes.
+         Collapsible epoch sections, newest first.
+       </div> -->
+
+  <!-- TODO: LOOMING CHALLENGES tab-panel
+       <div class="tab-panel" id="tab-looming">
+         Ordered list of upcoming challenges. Re-orderable. Fields: name, card ID, epoch marker, notes.
+       </div> -->
+
+  <!-- TODO: INVESTIGATIONS tab-panel
+       <div class="tab-panel" id="tab-investigations">
+         List of investigation entries. Each: omen, card ID, notes/findings.
+       </div> -->
+
+  <!-- TODO: CAVE WALL tab-panel
+       <div class="tab-panel" id="tab-cave-wall">
+         Gallery of cave drawings. Each entry has a name (always) + optional image.
+         Image sources: file upload (photo) OR in-browser SVG canvas (PointerEvents,
+         single-stroke cave-painting style — suited to Apple Pencil on iPad).
+         Store images as base64 in IndexedDB (too large for localStorage).
+       </div> -->
+
+  <!-- TODO: NOTES tab-panel
+       <div class="tab-panel" id="tab-notes">
+         Free-form textarea or named note pages. Simple Markdown rendering optional.
+       </div> -->
 
   <!-- JOURNAL -->
   <div class="tab-panel" id="tab-journal">
