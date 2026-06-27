@@ -13,17 +13,14 @@ SSH="ssh -i ~/.ssh/deploy_key -p ${SSH_PORT:-22}"
 $SSH "$SSH_USER@$SSH_HOST" "mkdir -p '$REMOTE_PATH'"
 
 # Upload only the files the web server needs
-rsync -az --delete \
-  -e "$SSH" \
-  --include='index.html' \
-  --include='styles.css' \
-  --include='app.js' \
-  --include='analytics.js' \
-  --include='materials.json' \
-  --include='catalogue.json' \
-  --include='assets/***' \
-  --exclude='*' \
-  "$DEPLOY_DIR/" \
-  "$SSH_USER@$SSH_HOST:$REMOTE_PATH"
+tar -czf - \
+  index.html \
+  styles.css \
+  app.js \
+  analytics.js \
+  materials.json \
+  catalogue.json \
+  assets/ \
+  | $SSH "$SSH_USER@$SSH_HOST" "tar -xzf - -C '$REMOTE_PATH'"
 
 echo "Deployed to $SSH_HOST:$REMOTE_PATH"
