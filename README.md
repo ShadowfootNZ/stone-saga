@@ -1,8 +1,8 @@
 # Stonesaga — Crafting Journal
 
-A browser-based crafting tracker for the Stonesaga board game. Records discovered
+A browser-based campaign journal for the Stonesaga board game. Records discovered
 recipes, computes possible crafting codes from token pip data, and lets a whole table
-share a common set of values via JSON export/import.
+share a common journal via JSON export/import or Google Drive sync.
 
 No build step, no dependencies, no server. It's a static site — open `index.html` or
 host it on GitHub Pages.
@@ -15,27 +15,55 @@ host it on GitHub Pages.
 | `styles.css` | All styling |
 | `app.js` | Application logic |
 | `materials.json` | Material definitions — edit this to add new materials |
+| `drive-sync.gs` | Google Apps Script for Drive sync — deploy once, see below |
 
 ## Running it
 
 Open `index.html` in a browser, or enable GitHub Pages (Settings → Pages → deploy from
-branch, root) and visit [https://shadowfootnz.github.io/stonesaga/](https://shadowfootnz.github.io/stonesaga/).
+branch, root) and visit [https://apps.shadowfoot.com/stonesaga/](https://apps.shadowfoot.com/stonesaga/).
 
 All data is stored in the browser's `localStorage`, which is per-browser and per-origin.
-Nothing is sent anywhere. To share data between people, use **Export JSON** and have
-others **Import** it.
+To share data between people, use **Export JSON** and have others **Import** it, or set
+up **Drive Sync** (see below) so the group pulls and pushes to a shared file automatically.
 
 ## Features
 
-- **Journal** — record discovered items with their item-card number, all crafting codes,
-  the two source materials (category is auto-derived from the material name), and notes.
 - **Combination Explorer** — pick one or two materials and see every valid crafting code,
   flagged as discovered, dead-end, or unknown. Selecting an unprocessed material also
   considers its processed form.
-- **Token pip data** — load a JSON file describing each token's pip layout to enable
-  automatic code computation.
-- **Code shorthand** — type codes like `B2132, R4210` (B/R/Y/P/G + four digits).
-- **Export / Import** — timestamped JSON, with a choice of merge or overwrite on import.
+- **Recipes** — record discovered items with their item-card number, all crafting codes,
+  the two source materials, and notes.
+- **Materials** — browse all materials in a card grid with pip marks and category filter.
+  Add custom materials discovered during play; they are stored in the export JSON so they
+  travel with the group's data.
+- **Token pip data** — pip marks for all built-in materials are included. Load a custom
+  JSON file to override built-in data or add materials not yet in the app.
+- **Code shorthand** — type codes like `B2132, R4210`
+  (B=Blue, R=Red, Y=Yellow, P=Purple, G=Grey, Gn=Green, O=Orange + four digits).
+- **Export / Import** — timestamped JSON with merge or overwrite on import. The export
+  file carries the group's Drive file ID so it connects new devices automatically.
+- **Drive Sync** — pull the latest state from a shared Drive file, resolve any conflicts
+  via the merge screen, and push the result back. See setup below.
+
+## Drive Sync setup
+
+One person does this once; everyone else connects automatically when they import any JSON
+that has been synced.
+
+1. Go to [script.google.com](https://script.google.com) and create a new project.
+2. Paste the contents of `drive-sync.gs`, replacing the default code.
+3. Click **Deploy → New deployment → Web app**.
+   - Execute as: **Me**
+   - Who has access: **Anyone**
+4. Click **Deploy** and copy the Web App URL.
+5. Open `app.js` and paste the URL as the value of `DRIVE_SYNC_URL` (near the top of the
+   CONSTANTS section).
+6. In the app, open **Drive Sync → Create group file**. The file is created in a
+   `Stonesaga` folder in your Google Drive.
+7. Export your JSON and share it with the group — the Drive file ID travels inside it.
+
+Each player clicks **Drive Sync → Sync** to pull the latest state, review any conflicts,
+and push the merged result back.
 
 ## Crafting model
 
@@ -68,12 +96,15 @@ yet in the app.
 
 Each material maps to a list of valid orientations (only orientations with a non-null left
 edge are included). Each orientation is `[leftColour, leftCount, rightColour, rightCount]`.
-Use `null` for a null icon (count `0`). Pip colours: Blue, Red, Yellow, Purple, Grey.
+Use `null` for a null icon (count `0`). Pip colours: Blue, Red, Yellow, Purple, Grey, Green, Orange.
 
 ## Adding materials
 
-Edit `materials.json` — the app fetches it at startup. Each entry is keyed by material
-name and has the following fields:
+**In the app** — use the **Materials** tab → **+ Add Material**. Custom materials are
+stored in localStorage and in the export JSON so they sync to the whole group.
+
+**In `materials.json`** — edit the file and serve the app over HTTP (GitHub Pages, a
+local dev server, etc.). Each entry is keyed by material name:
 
 ```json
 "Amber (polished)": {
@@ -91,9 +122,9 @@ name and has the following fields:
 - `image` — path relative to the project root; drop the image in `assets/images/materials/`
 - `marks` — the four edge pips (`left`, `right`, `top`, `bottom`), each `"Color N"` or `null`
 
-The `materials.json` format is only supported when the app is served over HTTP (GitHub
-Pages, a local dev server, etc.). Opening `index.html` directly via `file://` falls back
-to the built-in list hardcoded in `app.js`.
+If a name in `materials.json` matches a custom material added in-app, the official entry
+takes precedence. Opening `index.html` directly via `file://` falls back to the built-in
+list hardcoded in `app.js`.
 
 ## Materials
 
